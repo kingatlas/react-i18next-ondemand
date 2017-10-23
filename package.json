@@ -1,0 +1,28 @@
+{
+  "name": "react-i18next-ondemand",
+  "version": "0.1.0",
+  "description": "Using react-i18next with async (ondemand) translations. No need to preload resource bundles.",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "author": "Nabil Koroghli",
+  "license": "MIT",
+  "scripts": {
+    "build": "gulp"
+  },
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@types/react": "^16.0.18",
+    "gulp": "^3.9.1",
+    "gulp-typescript": "^3.2.2",
+    "merge2": "^1.2.0",
+    "tslint": "^5.8.0",
+    "typescript": "^2.5.3"
+  },
+  "dependencies": {
+    "debounce": "^1.0.2",
+    "i18next": "^10.0.3",
+    "react-i18next": "^6.0.6"
+  }
+}
