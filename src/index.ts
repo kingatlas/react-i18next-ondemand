@@ -1,6 +1,6 @@
+import * as debounce from 'debounce';
 import i18n from 'i18next';
 import * as reactI18next from 'react-i18next';
-import * as debounce from 'debounce';
 
 export interface TranslationMap {
   [key: string]: string;
@@ -15,18 +15,14 @@ interface KeysSet {
 export function translate(translationService: TranslationService, namespace: string, lang: string) {
     const translatedKeys: TranslationMap = {};
     const missingKeys: KeysSet = {};
-  
     function requestResources() {
       translationService(Object.keys(missingKeys)).then((result) => {
-        
               Object.keys(result).map(k => { translatedKeys[k] = result[k]; });
-    
               i18n.addResources(lang, namespace, result);
           });
     }
-    
+
     const debouncedRequestResources = debounce(requestResources);
-    
     function requestKey(key: string) {
         if (!translatedKeys[key]) {
           if (!missingKeys[key]) {
@@ -45,17 +41,13 @@ export function translate(translationService: TranslationService, namespace: str
     .use(reactI18next.reactI18nextModule)
     .init({
       fallbackLng: lang,
-  
       // have a common namespace used around the full app
       ns: [namespace],
       defaultNS: namespace,
-  
       debug: false,
-  
       interpolation: {
         escapeValue: false, // not needed for react!!
       },
-  
       react: {
         wait: true
       }
@@ -63,51 +55,50 @@ export function translate(translationService: TranslationService, namespace: str
 
     return class I18n extends reactI18next.I18n {
 
-    /**
-     * Keep track on resource keys without translation
-     */
-    missingKeys: { [key: string]: boolean } = {};
+      /**
+       * Keep track on resource keys without translation
+       */
+      missingKeys: { [key: string]: boolean } = {};
 
-    getI18nTranslate(): i18next.TranslationFunction {
-      const originalTranslate = super.getI18nTranslate();
-      return (keys: string | string[]) => {
-        const requestedKeys = typeof keys === 'string' ? [ keys ] : keys;
-        requestedKeys.map(k => { if (!translatedKeys[k]) { this.missingKeys[k] = true; }});
-        
-        return originalTranslate(keys, { defaultValue: '' });
-      };
-    }
-    
-    /**
-     * return true only if some missing keys were translated
-     */
-    needUpdateState() {
+      public getI18nTranslate(): i18next.TranslationFunction {
+        const originalTranslate = super.getI18nTranslate();
+        return (keys: string | string[]) => {
+          const requestedKeys = typeof keys === 'string' ? [ keys ] : keys;
+          requestedKeys.map(k => { if (!translatedKeys[k]) { this.missingKeys[k] = true; }});
+          return originalTranslate(keys, { defaultValue: '' });
+        };
+      }
+
+      public onI18nChanged() {
+        if (!this.mounted) {
+          return;
+        }
+        if (this.needUpdateState()) {
+          this.t = this.getI18nTranslate();
+          this.setState({ i18nLoadedAt: new Date() });
+        }
+      }
       
-      let newTranslatedKeys = false;
-      const newMissingKeys: KeysSet = {};
+      /**
+       * return true only if some missing keys were translated
+       */
+      needUpdateState() {
 
-      Object.keys(this.missingKeys)
-            .map(k => { 
-                  if (translatedKeys[k]) { 
-                    newTranslatedKeys = true; 
-                  } else { 
-                    newMissingKeys[k] = true; 
-                  }
-              });
+        let newTranslatedKeys = false;
+        const newMissingKeys: KeysSet = {};
 
-      this.missingKeys = newMissingKeys;
+        Object.keys(this.missingKeys)
+              .map((k) => {
+                    if (translatedKeys[k]) {
+                      newTranslatedKeys = true;
+                    } else {
+                      newMissingKeys[k] = true;
+                    }
+                });
 
-      return newTranslatedKeys;
-    }
+        this.missingKeys = newMissingKeys;
 
-    onI18nChanged() {
-      if (!this.mounted) {
-        return;
+        return newTranslatedKeys;
       }
-      if (this.needUpdateState()) {
-        this.t = this.getI18nTranslate();
-        this.setState({ i18nLoadedAt: new Date() });
-      }
-    }
   };
 }

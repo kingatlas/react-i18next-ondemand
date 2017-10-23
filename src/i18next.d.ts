@@ -1,3 +1,4 @@
+/* tslint:disable */
 declare namespace i18next {
 
     interface FallbackLngObjList {

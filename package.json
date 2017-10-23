@@ -7,6 +7,7 @@
   "author": "Nabil Koroghli",
   "license": "MIT",
   "scripts": {
+    "prepublish": "yarn build",
     "build": "gulp"
   },
   "files": [
@@ -15,9 +16,11 @@
   "devDependencies": {
     "@types/react": "^16.0.18",
     "gulp": "^3.9.1",
+    "gulp-tslint": "^8.1.2",
     "gulp-typescript": "^3.2.2",
     "merge2": "^1.2.0",
     "tslint": "^5.8.0",
+    "tslint-react": "^3.2.0",
     "typescript": "^2.5.3"
   },
   "dependencies": {

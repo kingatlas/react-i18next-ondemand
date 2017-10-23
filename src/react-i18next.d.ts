@@ -1,3 +1,4 @@
+/* tslint:disable */
 /// <reference path="./i18next.d.ts" />
 
 declare module 'react-i18next' {
