@@ -16,6 +16,7 @@
   "devDependencies": {
     "@types/react": "^16.0.18",
     "gulp": "^3.9.1",
+    "gulp-clean": "^0.3.2",
     "gulp-tslint": "^8.1.2",
     "gulp-typescript": "^3.2.2",
     "merge2": "^1.2.0",

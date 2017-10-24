@@ -1,3 +1,6 @@
+/// <reference path="./i18next.d.ts" />
+/// <reference path="./react-i18next.d.ts" />
+
 import * as debounce from 'debounce';
 import i18n from 'i18next';
 import * as reactI18next from 'react-i18next';

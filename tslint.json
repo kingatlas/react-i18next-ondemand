@@ -1,9 +1,10 @@
 {
     "extends": ["tslint:latest", "tslint-react"],
     "rules": {
+      "no-reference": false,
       "quotemark":[true, "single"],
       "trailing-comma": false,
-      "interface-name": [true, "never-prefix"],
+      "interface-name": false,
       "arrow-parens": false,
       "member-access": false,
       "no-trailing-whitespace": [true, "ignore-comments", "ignore-blank-lines"]

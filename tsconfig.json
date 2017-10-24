@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-      "outDir": "dist",
+      "baseUrl": "./",
       "module": "commonjs",
       "declaration": true,
       "target": "es5",
@@ -8,7 +8,6 @@
       "sourceMap": true,
       "allowJs": false,
       "moduleResolution": "node",
-      "rootDir": "src",
       "forceConsistentCasingInFileNames": true,
       "noImplicitReturns": true,
       "noImplicitThis": true,

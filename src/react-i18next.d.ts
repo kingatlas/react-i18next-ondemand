@@ -1,5 +1,8 @@
-/* tslint:disable */
 /// <reference path="./i18next.d.ts" />
+/**
+ * We can't use @types/react-i18next because it does not export I18n component 
+ * and depends on bad version of @types/i18next
+ */
 
 declare module 'react-i18next' {
     interface I18nState {
@@ -7,12 +10,11 @@ declare module 'react-i18next' {
         ready: boolean;
     }
     export class I18n extends React.Component<{}, I18nState> {
-        new(): React.Component;
         mounted: boolean;
         t: i18next.TranslationFunction;
         getI18nTranslate();
-
+        new(): React.Component;
     }
 
-    export const reactI18nextModule: { type: '3rdParty', init: ()=> void};
+    export const reactI18nextModule: { type: '3rdParty', init: () => void};
 }
