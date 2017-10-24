@@ -15,11 +15,49 @@ interface KeysSet {
   [key: string]: boolean;
 }
 
-export function translate(translationService: TranslationService, namespace: string, lang: string) {
+export interface Options {
+  /**
+   * Translations getter
+   * 
+   * @type {TranslationService}
+   * @memberof Options
+   */
+  translationGetter: TranslationService;
+
+  /**
+   * Namespace to use when adding missing translation
+   * 
+   * @type {string}
+   * @memberof Options
+   */
+  namespace: string;
+
+  /**
+   * Language to use when adding missing translation
+   * 
+   * @type {string}
+   * @memberof Options
+   */
+  lang: string;
+
+  /**
+   * boolean to control if the method initialize i18next or not (default: false)
+   * @type {boolean}
+   * @memberof Options
+   */
+  initI18next?: boolean;
+}
+
+export function translate(options: Options) {
+    const translationGetter = options.translationGetter;
+    const namespace = options.namespace;
+    const lang = options.lang;
+    const initI18next = options.initI18next !== undefined ? options.initI18next : true;
     const translatedKeys: TranslationMap = {};
     const missingKeys: KeysSet = {};
+
     function requestResources() {
-      translationService(Object.keys(missingKeys)).then((result) => {
+      translationGetter(Object.keys(missingKeys)).then((result) => {
               Object.keys(result).map(k => { translatedKeys[k] = result[k]; });
               i18n.addResources(lang, namespace, result);
           });
@@ -39,22 +77,24 @@ export function translate(translationService: TranslationService, namespace: str
       requestKey(key);
     });
 
-    // configure i18next
-    i18n
-    .use(reactI18next.reactI18nextModule)
-    .init({
-      fallbackLng: lang,
-      // have a common namespace used around the full app
-      ns: [namespace],
-      defaultNS: namespace,
-      debug: false,
-      interpolation: {
-        escapeValue: false, // not needed for react!!
-      },
-      react: {
-        wait: true
-      }
-    });
+    if (initI18next) {
+        // configure i18next
+        i18n
+        .use(reactI18next.reactI18nextModule)
+        .init({
+          fallbackLng: lang,
+          // have a common namespace used around the full app
+          ns: [namespace],
+          defaultNS: namespace,
+          debug: false,
+          interpolation: {
+            escapeValue: false, // not needed for react!!
+          },
+          react: {
+            wait: true
+          }
+        });
+    }
 
     return class I18n extends reactI18next.I18n {
 
@@ -91,7 +131,7 @@ export function translate(translationService: TranslationService, namespace: str
         const newMissingKeys: KeysSet = {};
 
         Object.keys(this.missingKeys)
-              .map((k) => {
+              .map(k => {
                     if (translatedKeys[k]) {
                       newTranslatedKeys = true;
                     } else {
