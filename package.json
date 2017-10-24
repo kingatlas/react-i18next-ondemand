@@ -1,6 +1,6 @@
 {
   "name": "react-i18next-ondemand",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Using react-i18next with async (ondemand) translations. No need to preload resource bundles.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
