@@ -23,8 +23,19 @@ $ yarn add react-i18next-ondemand
 
 ```TypeScript
 // i18n.ts file
+import * as i18n from 'i18next';
+import { reactI18nextModule } from 'react-i18next';
 import { TranslationMap, translate } from 'react-i18next-ondemand';
 
+// init and attach i18n to react-i18next
+i18n
+  .use(reactI18nextModule)
+  .init({
+    fallbackLng: 'en',
+    ns: ['thenamespace'],
+    defaultNS: 'thenamespace',
+    debug: false
+  });
 
 function translationService(keys: string[]) {
       // simulate AJAX call
