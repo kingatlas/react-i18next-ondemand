@@ -2,7 +2,7 @@
 /// <reference path="./react-i18next.d.ts" />
 
 import * as debounce from 'debounce';
-import i18n from 'i18next';
+import * as i18n from 'i18next';
 import * as reactI18next from 'react-i18next';
 
 export interface TranslationMap {
@@ -89,9 +89,6 @@ export function translate(options: Options) {
           debug: false,
           interpolation: {
             escapeValue: false, // not needed for react!!
-          },
-          react: {
-            wait: true
           }
         });
     }
