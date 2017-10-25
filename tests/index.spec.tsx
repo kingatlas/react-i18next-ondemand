@@ -82,4 +82,29 @@ describe('I18n', () => {
         expect(translationGetter.mock.calls[0][0]).toEqual(['MISSING_KEY1', 'MISSING_KEY2']);
         expect(wrapper.html()).toEqual('<div>translated.MISSING_KEY1translated.MISSING_KEY2</div>');
     }));
+
+    it('should translate when in nested components', on(async () => {
+        // arrange
+        const translationGetter = jest.fn<TranslationService>();
+        translationGetter.mockReturnValue(Promise.resolve({
+            MISSING_KEY1: 'translated.MISSING_KEY1',
+            MISSING_KEY2: 'translated.MISSING_KEY2' }));
+
+        const I18n = translate({ translationGetter, namespace: NS, lang: LANG });
+        const Child = () => <I18n>{t => <div>{t('MISSING_KEY2')}</div>}</I18n>;
+        const Parent = () => <I18n>{t => <div>{t('MISSING_KEY1')}<Child/></div>}</I18n>;
+
+        // act
+        const wrapper = mount(<Parent/>);
+    
+        // assert
+        expect(wrapper.html()).toEqual('<div><div></div></div>');
+
+        // wait until the debounce is called
+        await delay(100);
+
+        expect(translationGetter.mock.calls.length).toBe(1);
+        expect(translationGetter.mock.calls[0][0]).toEqual(['MISSING_KEY1', 'MISSING_KEY2']);
+        expect(wrapper.html()).toEqual('<div>translated.MISSING_KEY1<div>translated.MISSING_KEY2</div></div>');
+    }));
 });
