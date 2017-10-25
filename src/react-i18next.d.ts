@@ -10,6 +10,7 @@ declare module 'react-i18next' {
         ready: boolean;
     }
     export class I18n extends React.Component<{}, I18nState> {
+        i18n: i18next.i18n;
         mounted: boolean;
         t: i18next.TranslationFunction;
         getI18nTranslate();
