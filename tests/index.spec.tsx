@@ -2,7 +2,7 @@ import { mount } from 'enzyme';
 import * as i18n from 'i18next';
 import * as React from 'react';
 import { reactI18nextModule } from 'react-i18next';
-import {translate, TranslationService} from '../src/index';
+import {translate, TranslationGetter} from '../src/index';
 import { delay, on } from './utils';
 
 describe('I18n', () => {
@@ -42,9 +42,9 @@ describe('I18n', () => {
 
     it('should load missing resource and translate', on(async () => {
         // arrange
-        const translationGetter = jest.fn<TranslationService>();
+        const translationGetter = jest.fn<TranslationGetter>();
         translationGetter.mockReturnValue(Promise.resolve({ MISSING_KEY: 'translated.MISSING_KEY' }));
-        const I18n = translate({ translationGetter, namespace: NS, lang: LANG });
+        const I18n = translate({ translationGetter });
 
         // act
         const wrapper = mount(<I18n>{t => <div>{t('MISSING_KEY')}</div>}</I18n>);
@@ -62,12 +62,12 @@ describe('I18n', () => {
 
     it('should gather missing keys request in one call', on(async () => {
         // arrange
-        const translationGetter = jest.fn<TranslationService>();
+        const translationGetter = jest.fn<TranslationGetter>();
         translationGetter.mockReturnValue(Promise.resolve({
             MISSING_KEY1: 'translated.MISSING_KEY1',
             MISSING_KEY2: 'translated.MISSING_KEY2' }));
 
-        const I18n = translate({ translationGetter, namespace: NS, lang: LANG });
+        const I18n = translate({ translationGetter });
         
         // act
         const wrapper = mount(<I18n>{t => <div>{t('MISSING_KEY1')}{t('MISSING_KEY2')}</div>}</I18n>);
@@ -85,12 +85,12 @@ describe('I18n', () => {
 
     it('should translate when in nested components', on(async () => {
         // arrange
-        const translationGetter = jest.fn<TranslationService>();
+        const translationGetter = jest.fn<TranslationGetter>();
         translationGetter.mockReturnValue(Promise.resolve({
             MISSING_KEY1: 'translated.MISSING_KEY1',
             MISSING_KEY2: 'translated.MISSING_KEY2' }));
 
-        const I18n = translate({ translationGetter, namespace: NS, lang: LANG });
+        const I18n = translate({ translationGetter });
         const Child = () => <I18n>{t => <div>{t('MISSING_KEY2')}</div>}</I18n>;
         const Parent = () => <I18n>{t => <div>{t('MISSING_KEY1')}<Child/></div>}</I18n>;
 

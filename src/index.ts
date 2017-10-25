@@ -1,3 +1,4 @@
+// tslint:disable: no-string-literal
 /// <reference path="./i18next.d.ts" />
 /// <reference path="./react-i18next.d.ts" />
 
@@ -8,8 +9,11 @@ export interface TranslationMap {
   [key: string]: string;
 }
 
-export type TranslationService = (keys: string[]) => Promise<TranslationMap>;
+export type TranslationGetter = (keys: string[], language: string, namespace: string) => Promise<TranslationMap>;
 
+interface KeyQueue {
+  [path: string]: KeysSet;
+}
 interface KeysSet {
   [key: string]: boolean;
 }
@@ -18,35 +22,47 @@ export interface Options {
   /**
    * Translations getter
    * 
-   * @type {TranslationService}
+   * @type {TranslationGetter}
    * @memberof Options
    */
-  translationGetter: TranslationService;
+  translationGetter: TranslationGetter;
+}
 
-  /**
-   * Namespace to use when adding missing translation
-   * 
-   * @type {string}
-   * @memberof Options
-   */
-  namespace: string;
+function attachOnDemand(i18n: i18next.i18n, translationGetter: TranslationGetter) {
+  if (i18n['_onDemand']) {
+    return;
+  }
 
-  /**
-   * Language to use when adding missing translation
-   * 
-   * @type {string}
-   * @memberof Options
-   */
-  lang: string;
+  i18n['_ondemand'] = true;
+  const missingKeysQueue: KeyQueue = {};
+
+  function requestResources(lng: string, ns: string) {
+    const path = `${lng}.${ns}`;
+    translationGetter(Object.keys(missingKeysQueue[path]), lng, ns).then((result) => {
+            missingKeysQueue[path] = {};
+            i18n.addResources(lng, ns, result);
+      });
+  }
+
+  const debouncedRequestResources: {[path: string]: () => void } = {};
+  function requestKey(key: string, lng: string, ns: string) {
+    const path = `${lng}.${ns}`;
+    missingKeysQueue[path] = missingKeysQueue[path] || {};
+    missingKeysQueue[path][key] = true;
+      
+    debouncedRequestResources[path] = debouncedRequestResources[path] ||
+                                      debounce(() => requestResources(lng, ns));
+    debouncedRequestResources[path]();
+  }
+
+  i18n.on('missingKey', (lngs: string | string[], ns: string, key: string, res: string) => {
+
+    const languages = typeof lngs === 'string' ? [ lngs ] : lngs;
+    languages.map(l => requestKey(key, l, ns));
+  });
 }
 
 export function translate(options: Options) {
-    const translationGetter = options.translationGetter;
-    const namespace = options.namespace;
-    const lang = options.lang;
-    const translatedKeys: TranslationMap = {};
-    const missingKeys: KeysSet = {};
-
     return class I18n extends reactI18next.I18n {
 
       /**
@@ -57,35 +73,19 @@ export function translate(options: Options) {
       constructor(props, context) {
         super(props, context);
 
-        const i18n = this.i18n;
-
-        function requestResources() {
-          translationGetter(Object.keys(missingKeys)).then((result) => {
-                  Object.keys(result).map(k => { translatedKeys[k] = result[k]; });
-                  i18n.addResources(lang, namespace, result);
-              });
-        }
-    
-        const debouncedRequestResources = debounce(requestResources);
-        function requestKey(key: string) {
-            if (!translatedKeys[key]) {
-              if (!missingKeys[key]) {
-                  missingKeys[key] = true;
-                  debouncedRequestResources();
-              }
-          }
-        }
-    
-        i18n.on('missingKey', (lngs: string[], ns: string, key: string, res: string) => {
-          requestKey(key);
-        });
+        attachOnDemand(this.i18n, options.translationGetter);
       }
 
       public getI18nTranslate(): i18next.TranslationFunction {
         const originalTranslate = super.getI18nTranslate();
+        const i18n = this.i18n;
+
         return (keys: string | string[]) => {
-          const requestedKeys = typeof keys === 'string' ? [ keys ] : keys;
-          requestedKeys.map(k => { if (!translatedKeys[k]) { this.missingKeys[k] = true; }});
+          const requestedKeys = typeof keys === 'string' ? [keys] : keys;
+          requestedKeys.map(k => { if (!i18n.exists(k)) {
+            this.missingKeys[k] = true;
+          }});
+
           return originalTranslate(keys, { defaultValue: '' });
         };
       }
@@ -105,13 +105,15 @@ export function translate(options: Options) {
        */
       needUpdateState() {
 
-        let newTranslatedKeys = false;
+        let needUpdate = false;
         const newMissingKeys: KeysSet = {};
+        const i18n = this.i18n;
 
+        // we check if the missings keys were translated
         Object.keys(this.missingKeys)
               .map(k => {
-                    if (translatedKeys[k]) {
-                      newTranslatedKeys = true;
+                    if (i18n.exists(k)) {
+                      needUpdate = true;
                     } else {
                       newMissingKeys[k] = true;
                     }
@@ -119,7 +121,7 @@ export function translate(options: Options) {
 
         this.missingKeys = newMissingKeys;
 
-        return newTranslatedKeys;
+        return needUpdate;
       }
   };
 }
