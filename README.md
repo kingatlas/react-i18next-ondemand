@@ -1,4 +1,7 @@
-[![npm version](https://badge.fury.io/js/react-i18next-ondemand.svg)](https://www.npmjs.com/package/react-i18next-ondemand)
+# Deprecated!
+
+This package has been deprecated and replaced by [i18next-keys-ondemand](https://github.com/kingatlas/i18next-keys-ondemand)
+
 
 # React I18next with on demand resources 
 
